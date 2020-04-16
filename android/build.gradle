@@ -60,5 +60,5 @@ repositories {
 
 dependencies {
     implementation 'com.facebook.react:react-native:+'
-    compile 'commons-net:commons-net:3.6'
+    implementation 'commons-net:commons-net:3.6'
 }
