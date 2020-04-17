@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
   s.platforms    = { :ios => "9.0" }
   s.source       = { :git => "https://github.com/sleede/react-native-ftp.git", :tag => "master" }
 
-  s.source_files = "ios/**/*.{h,m,c}"
+  s.source_files  = "ios/**/*.{h,m,pch}", 'ios/Libraries/**/ftplib.{c,h}'
   s.requires_arc = true
 
   s.dependency "React"
