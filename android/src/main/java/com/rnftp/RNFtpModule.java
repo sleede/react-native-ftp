@@ -37,7 +37,7 @@ public class RNFtpModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void connect(final ReadableMap config, final Promise promise){
-        String hostname = config.hasKey("host") ? config.getString("host") : "";
+        String hostname = config.hasKey("hostname") ? config.getString("hostname") : "";
         String username = config.hasKey("username") ? config.getString("username") : "anonymous";
         String password = config.hasKey("password") ? config.getString("password") : "anonymous@";
 
