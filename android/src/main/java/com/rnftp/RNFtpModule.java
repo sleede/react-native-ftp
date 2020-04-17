@@ -64,46 +64,56 @@ public class RNFtpModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void list(String path, final Promise promise){
-        if (path == null) {
-            promise.reject("ERROR", "Expected path.");
-        } else {
-            try {
-                FTPFile[] files = client.listFiles(path);
-                JSONObject json = new JSONObject();
-                JSONArray arrfiles = new JSONArray();
-                for (FTPFile file : files) {
-                    Calendar modifiedDate = file.getTimestamp();
-                    String modifiedDateString = (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss zzz")).format(modifiedDate.getTime());
+    public void list(final String path, final Promise promise){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if (path == null) {
+                    promise.reject("ERROR", "Expected path.");
+                } else {
+                    try {
+                        FTPFile[] files = client.listFiles(path);
+                        JSONObject json = new JSONObject();
+                        JSONArray arrfiles = new JSONArray();
+                        for (FTPFile file : files) {
+                            Calendar modifiedDate = file.getTimestamp();
+                            String modifiedDateString = (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss zzz")).format(modifiedDate.getTime());
 
-                    JSONObject data = new JSONObject();
-                    data.put("name", file.getName());
-                    data.put("type", file.getType());
-                    data.put("size", file.getSize());
-                    data.put("modifiedDate", modifiedDateString);
+                            JSONObject data = new JSONObject();
+                            data.put("name", file.getName());
+                            data.put("type", file.getType());
+                            data.put("size", file.getSize());
+                            data.put("modifiedDate", modifiedDateString);
 
-                    arrfiles.put(data);
+                            arrfiles.put(data);
+                        }
+                        json.put("results", arrfiles);
+                        promise.resolve(json.toString());
+                    } catch (Exception e) {
+                        promise.reject("ERROR", e.getMessage());
+                    }
                 }
-                json.put("results", arrfiles);
-                promise.resolve(json.toString());
-            } catch (Exception e) {
-                promise.reject("ERROR", e.getMessage());
             }
-        }
+        }).start();
     }
 
     @ReactMethod
     public void downloadFile(final String remoteFile, final String localFile, final Promise promise)
     {
-        try {
-            client.setFileType(FTP.BINARY_FILE_TYPE);
-            File downloadFile = new File(localFile);
-            OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(downloadFile));
-            boolean isSuccess = client.retrieveFile(remoteFile, outputStream);
-            outputStream.close();
-            promise.resolve(isSuccess);
-        } catch (Exception e) {
-            promise.reject("ERROR", e.getMessage());
-        }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    client.setFileType(FTP.BINARY_FILE_TYPE);
+                    File downloadFile = new File(localFile);
+                    OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(downloadFile));
+                    boolean isSuccess = client.retrieveFile(remoteFile, outputStream);
+                    outputStream.close();
+                    promise.resolve(isSuccess);
+                } catch (Exception e) {
+                    promise.reject("ERROR", e.getMessage());
+                }
+            }
+        }).start();
     }
 }
