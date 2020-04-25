@@ -16,6 +16,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
@@ -111,6 +112,22 @@ public class RNFtpModule extends ReactContextBaseJavaModule {
                     outputStream.close();
                     promise.resolve(isSuccess);
                 } catch (Exception e) {
+                    promise.reject("ERROR", e.getMessage());
+                }
+            }
+        }).start();
+    }
+
+    @ReactMethod
+    public void disconnect(final Promise promise){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    client.logout();
+                    client.disconnect();
+                    promise.resolve(true);
+                } catch (IOException e) {
                     promise.reject("ERROR", e.getMessage());
                 }
             }

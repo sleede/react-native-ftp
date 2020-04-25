@@ -112,5 +112,9 @@ RCT_EXPORT_METHOD(downloadFile:(NSString *)remoteFile localFile:(NSString *)loca
     }
 }
 
+RCT_EXPORT_METHOD(disconnect:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+{
+    resolve(@(true));
+}
 
 @end
