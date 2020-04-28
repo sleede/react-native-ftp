@@ -1,16 +1,17 @@
 package com.rnftp;
 
+import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.WritableArray;
+import com.facebook.react.bridge.WritableMap;
 
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -19,6 +20,7 @@ import java.io.OutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.TimeZone;
 
 public class RNFtpModule extends ReactContextBaseJavaModule {
 
@@ -74,22 +76,28 @@ public class RNFtpModule extends ReactContextBaseJavaModule {
                 } else {
                     try {
                         FTPFile[] files = client.listFiles(path);
-                        JSONObject json = new JSONObject();
-                        JSONArray arrfiles = new JSONArray();
+
+                        WritableArray fileMaps = Arguments.createArray();
+
                         for (FTPFile file : files) {
+                            WritableMap fileMap = Arguments.createMap();
+
                             Calendar modifiedDate = file.getTimestamp();
-                            String modifiedDateString = (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss zzz")).format(modifiedDate.getTime());
+                            TimeZone tz = TimeZone.getTimeZone("CET");
+                            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+                            df.setTimeZone(tz);
+                            String modifiedDateString = df.format(modifiedDate.getTime());
 
-                            JSONObject data = new JSONObject();
-                            data.put("name", file.getName());
-                            data.put("type", file.getType());
-                            data.put("size", file.getSize());
-                            data.put("modifiedDate", modifiedDateString);
+                            fileMap.putString("name", file.getName());
+                            fileMap.putInt("type", file.getType());
+                            fileMap.putDouble("size", file.getSize());
+                            fileMap.putString("modifiedDate", modifiedDateString);
 
-                            arrfiles.put(data);
+                            fileMaps.pushMap(fileMap);
                         }
-                        json.put("results", arrfiles);
-                        promise.resolve(json.toString());
+
+
+                        promise.resolve(fileMaps);
                     } catch (Exception e) {
                         promise.reject("ERROR", e.getMessage());
                     }
