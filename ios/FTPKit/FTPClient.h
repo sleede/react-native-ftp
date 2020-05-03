@@ -484,4 +484,6 @@
  */
 - (NSString *)printWorkingDirectory;
 
+- (int) connectStat;
+
 @end

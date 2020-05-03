@@ -472,6 +472,31 @@
     });
 }
 
+- (int)connectStat
+{
+    self.lastError = nil;
+    const char *host = [_credentials.host cStringUsingEncoding:NSUTF8StringEncoding];
+    const char *user = [_credentials.username cStringUsingEncoding:NSUTF8StringEncoding];
+    const char *pass = [_credentials.password cStringUsingEncoding:NSUTF8StringEncoding];
+    netbuf *conn;
+    int stat = FtpConnect(host, &conn);
+    if (stat == 0) {
+        // @fixme We don't get the exact error code from the lib. Use a generic
+        // connection error.
+        self.lastError = [NSError FTPKitErrorWithCode:10060];
+        return 0;
+    }
+    stat = FtpLogin(user, pass, conn);
+    if (stat == 0) {
+        NSString *response = [NSString stringWithCString:FtpLastResponse(conn) encoding:NSUTF8StringEncoding];
+        self.lastError = [NSError FTPKitErrorWithResponse:response];
+        FtpQuit(conn);
+        return 0;
+    }
+    FtpQuit(conn);
+    return stat;
+}
+
 /** Private Methods */
 
 - (netbuf *)connect
