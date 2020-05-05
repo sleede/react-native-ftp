@@ -44,7 +44,8 @@ RCT_EXPORT_METHOD(connect:(NSDictionary *)config connectWithResolver:(RCTPromise
         } else {
             self.client = [FTPClient clientWithHost:hostname port:21 username:username password:password];
         }
-        resolve(@(true));
+        int stat = [self.client connectStat];
+        resolve(@(stat));
     }
 }
 
