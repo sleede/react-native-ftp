@@ -79,7 +79,7 @@ RCT_EXPORT_METHOD(list:(NSString *)path listWithResolver:(RCTPromiseResolveBlock
                     NSDate* modifiedDate = handle.modified;
                     NSDateFormatter* dateFormatter = [[NSDateFormatter alloc] init];
                     dateFormatter.locale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
-                    dateFormatter.dateFormat = @"yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+                    dateFormatter.dateFormat = @"yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
                     NSString* modifiedDateString = [dateFormatter stringFromDate:modifiedDate];
                     [newFile setObject:modifiedDateString forKey:@"modifiedDate"];
 
