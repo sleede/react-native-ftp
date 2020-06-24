@@ -24,6 +24,7 @@ RCT_EXPORT_METHOD(connect:(NSDictionary *)config connectWithResolver:(RCTPromise
     NSString *hostname = [RCTConvert NSString:config[@"hostname"]];
     NSString *username = [RCTConvert NSString:config[@"username"]];
     NSString *password = [RCTConvert NSString:config[@"password"]];
+    int timeout = [config[@"timeout"] integerValue];
 
     if (hostname == nil || hostname.length <= 0)
     {
@@ -40,9 +41,9 @@ RCT_EXPORT_METHOD(connect:(NSDictionary *)config connectWithResolver:(RCTPromise
         if ([address count] == 2) {
             NSString* host = [address objectAtIndex:0];
             NSNumber* port = [NSNumber numberWithInt:[[address objectAtIndex:1] intValue]];
-            self.client = [FTPClient clientWithHost:host port:(int)port username:username password:password];
+            self.client = [FTPClient clientWithHost:host port:(int)port username:username password:password timeout:timeout];
         } else {
-            self.client = [FTPClient clientWithHost:hostname port:21 username:username password:password];
+            self.client = [FTPClient clientWithHost:hostname port:21 username:username password:password timeout:timeout];
         }
         int stat = [self.client connectStat];
         resolve(@(stat));

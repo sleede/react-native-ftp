@@ -6,6 +6,7 @@
 @property (nonatomic, readonly) int port;
 @property (nonatomic, readonly) NSString *username;
 @property (nonatomic, readonly) NSString *password;
+@property (nonatomic, readonly) int timeout;
 
 /**
  Factory: Create credentials used for login.
@@ -16,7 +17,7 @@
  @param password User's password.
  @return FTPCredentials
  */
-+ (instancetype)credentialsWithHost:(NSString *)host port:(int)port username:(NSString *)username password:(NSString *)password;
++ (instancetype)credentialsWithHost:(NSString *)host port:(int)port username:(NSString *)username password:(NSString *)password timeout:(int)timeout;
 
 /**
  Create credentials used for login.
@@ -27,7 +28,7 @@
  @param password User's password.
  @return FTPCredentials
  */
-- (id)initWithHost:(NSString *)host port:(int)port username:(NSString *)username password:(NSString *)password;
+- (id)initWithHost:(NSString *)host port:(int)port username:(NSString *)username password:(NSString *)password timeout:(int)timeout;
 
 /**
  Creates fully qualified FTP URL including schema, credentials and the absolute

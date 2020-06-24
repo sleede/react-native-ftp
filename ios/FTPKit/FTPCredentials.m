@@ -6,16 +6,17 @@
 @property (nonatomic, assign) int port;
 @property (nonatomic, strong) NSString *username;
 @property (nonatomic, strong) NSString *password;
+@property (nonatomic, assign) int timeout;
 @end
 
 @implementation FTPCredentials
 
-+ (instancetype)credentialsWithHost:(NSString *)aHost port:(int)aPort username:(NSString *)aUsername password:(NSString *)aPassword
++ (instancetype)credentialsWithHost:(NSString *)aHost port:(int)aPort username:(NSString *)aUsername password:(NSString *)aPassword timeout:(int)aTimeout
 {
-	return [[self alloc] initWithHost:aHost port:aPort username:aUsername password:aPassword];
+    return [[self alloc] initWithHost:aHost port:aPort username:aUsername password:aPassword timeout: aTimeout];
 }
 
-- (id)initWithHost:(NSString *)aHost port:(int)aPort username:(NSString *)aUsername password:(NSString *)aPassword
+- (id)initWithHost:(NSString *)aHost port:(int)aPort username:(NSString *)aUsername password:(NSString *)aPassword timeout:(int)aTimeout
 {
     self = [super init];
 	if (self) {
@@ -23,6 +24,7 @@
         self.port = aPort < 1 ? 21 : aPort;
         self.username = aUsername;
         self.password = aPassword;
+        self.timeout = aTimeout < 0 ? 0 : aTimeout;
 	}
 	return self;
 }

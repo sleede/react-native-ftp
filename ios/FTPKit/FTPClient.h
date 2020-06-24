@@ -47,7 +47,7 @@
  @param password Password of user.
  @return FTPClient
  */
-+ (instancetype)clientWithHost:(NSString *)host port:(int)port username:(NSString *)username password:(NSString* )password;
++ (instancetype)clientWithHost:(NSString *)host port:(int)port username:(NSString *)username password:(NSString* )password timeout:(int)timeout;
 
 /**
  Create an instance of FTPClient.
@@ -66,7 +66,7 @@
  @param password Password of user.
  @return FTPClient
  */
-- (instancetype)initWithHost:(NSString *)host port:(int)port username:(NSString *)username password:(NSString* )password;
+- (instancetype)initWithHost:(NSString *)host port:(int)port username:(NSString *)username password:(NSString* )password timeout:(int)timeout;
 
 /**
  Get the size, in bytes, for remote file at 'path'. This can not be used

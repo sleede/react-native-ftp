@@ -2,6 +2,7 @@
 #import "FTPKit+Protected.h"
 #import "FTPClient.h"
 #import "NSError+Additions.h"
+#import <React/RCTLog.h>
 
 @interface FTPClient ()
 
@@ -83,9 +84,9 @@
 	return [[self alloc] initWithCredentials:credentials];
 }
 
-+ (instancetype)clientWithHost:(NSString *)host port:(int)port username:(NSString *)username password:(NSString *)password
++ (instancetype)clientWithHost:(NSString *)host port:(int)port username:(NSString *)username password:(NSString *)password timeout:(int)timeout
 {
-	return [[self alloc] initWithHost:host port:port username:username password:password];
+    return [[self alloc] initWithHost:host port:port username:username password:password timeout:timeout];
 }
 
 - (instancetype)initWithCredentials:(FTPCredentials *)aLocation
@@ -98,9 +99,9 @@
 	return self;
 }
 
-- (instancetype)initWithHost:(NSString *)host port:(int)port username:(NSString *)username password:(NSString *)password
+- (instancetype)initWithHost:(NSString *)host port:(int)port username:(NSString *)username password:(NSString *)password timeout:(int)timeout
 {
-    FTPCredentials *creds = [FTPCredentials credentialsWithHost:host port:port username:username password:password];
+    FTPCredentials *creds = [FTPCredentials credentialsWithHost:host port:port username:username password:password timeout:timeout];
 	return [self initWithCredentials:creds];
 }
 
@@ -513,6 +514,7 @@
         self.lastError = [NSError FTPKitErrorWithCode:10060];
         return NULL;
     }
+    FtpOptions(3, _credentials.timeout, conn);
     stat = FtpLogin(user, pass, conn);
     if (stat == 0) {
         NSString *response = [NSString stringWithCString:FtpLastResponse(conn) encoding:NSUTF8StringEncoding];
