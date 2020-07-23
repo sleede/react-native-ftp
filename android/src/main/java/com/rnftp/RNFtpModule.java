@@ -41,33 +41,38 @@ public class RNFtpModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void connect(final ReadableMap config, final Promise promise){
-        String hostname = config.hasKey("hostname") ? config.getString("hostname") : "";
-        String username = config.hasKey("username") ? config.getString("username") : "anonymous";
-        String password = config.hasKey("password") ? config.getString("password") : "anonymous@";
-        int timeout = config.hasKey("timeout") ? config.getInt("timeout") : 0;
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String hostname = config.hasKey("hostname") ? config.getString("hostname") : "";
+                String username = config.hasKey("username") ? config.getString("username") : "anonymous";
+                String password = config.hasKey("password") ? config.getString("password") : "anonymous@";
+                int timeout = config.hasKey("timeout") ? config.getInt("timeout") : 0;
 
-        if (hostname == "") {
-            promise.reject("ERROR","Expected hostname.");
-        } else {
-            try {
-                client = new FTPClient();
-                String[] address = hostname.split(":");
-                client.setDefaultTimeout(timeout * 1000);
-                client.setConnectTimeout(timeout * 1000);
-                if (address.length == 2) {
-                    String host = address[0];
-                    int port = Integer.parseInt(address[1]);
-                    client.connect(host, port);
+                if (hostname == "") {
+                    promise.reject("ERROR","Expected hostname.");
                 } else {
-                    client.connect(hostname);
+                    try {
+                        client = new FTPClient();
+                        String[] address = hostname.split(":");
+                        client.setDefaultTimeout(timeout * 1000);
+                        client.setConnectTimeout(timeout * 1000);
+                        if (address.length == 2) {
+                            String host = address[0];
+                            int port = Integer.parseInt(address[1]);
+                            client.connect(host, port);
+                        } else {
+                            client.connect(hostname);
+                        }
+                        client.enterLocalPassiveMode();
+                        Boolean isLogin = client.login(username, password);
+                        promise.resolve(isLogin);
+                    } catch (Exception e) {
+                        promise.reject("ERROR",e.getMessage());
+                    }
                 }
-                client.enterLocalPassiveMode();
-                Boolean isLogin = client.login(username, password);
-                promise.resolve(isLogin);
-            } catch (Exception e) {
-                promise.reject("ERROR",e.getMessage());
             }
-        }
+        }).start();
     }
 
     @ReactMethod
