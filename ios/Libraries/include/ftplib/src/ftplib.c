@@ -32,6 +32,7 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <fcntl.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <arpa/inet.h>
@@ -580,7 +581,7 @@ GLOBALDEF char *FtpLastResponse(netbuf *nControl)
  *
  * return 1 if connected, 0 if not
  */
-GLOBALDEF int FtpConnect(const char *host, netbuf **nControl)
+GLOBALDEF int FtpConnect(const char *host, netbuf **nControl, int timeout)
 {
     int sControl;
     struct sockaddr_in sin;
@@ -635,6 +636,7 @@ GLOBALDEF int FtpConnect(const char *host, netbuf **nControl)
     }
     if ((sin.sin_addr.s_addr = inet_addr(lhost)) == INADDR_NONE)
     {
+
 	struct hostent *phe;
 #ifdef _REENTRANT
 	struct hostent he;
@@ -643,6 +645,7 @@ GLOBALDEF int FtpConnect(const char *host, netbuf **nControl)
 	if ( ( ( i = gethostbyname_r( lhost, &he, tmpbuf, TMP_BUFSIZ, &phe, &herr ) ) != 0 ) ||
 	     ( phe == NULL ) )
 	{
+
 	    if ( ftplib_debug )
 		fprintf(stderr, "gethostbyname: %s\n", hstrerror(herr));
 	    free(lhost);
@@ -666,6 +669,7 @@ GLOBALDEF int FtpConnect(const char *host, netbuf **nControl)
     #endif
     }
     free(lhost);
+
     sControl = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (sControl == -1)
     {
@@ -681,13 +685,78 @@ GLOBALDEF int FtpConnect(const char *host, netbuf **nControl)
 	net_close(sControl);
 	return 0;
     }
-    if (connect(sControl, (struct sockaddr *)&sin, sizeof(sin)) == -1)
-    {
-	if (ftplib_debug)
-	    perror("connect");
-	net_close(sControl);
-	return 0;
+    
+    // socket connnect with timeout
+    fd_set myset;
+    int valopt;
+    socklen_t lon;
+    struct timeval idletime;
+    long arg;
+    // Set non-blocking
+    if( (arg = fcntl(sControl, F_GETFL, NULL)) < 0) {
+        fprintf(stderr, "Error fcntl(..., F_GETFL) (%s)\n", strerror(errno));
+        return 0;
     }
+    arg |= O_NONBLOCK;
+    if( fcntl(sControl, F_SETFL, arg) < 0) {
+        fprintf(stderr, "Error fcntl(..., F_SETFL) (%s)\n", strerror(errno));
+        return 0;
+    }
+    int res = connect(sControl, (struct sockaddr *)&sin, sizeof(sin));
+    if (res == -1)
+    {
+        if (errno == EINPROGRESS) {
+            fprintf(stderr, "EINPROGRESS in connect() - selecting\n");
+            do {
+               idletime.tv_sec = timeout;
+               idletime.tv_usec = 0;
+               FD_ZERO(&myset);
+               FD_SET(sControl, &myset);
+               res = select(sControl+1, NULL, &myset, NULL, &idletime);
+               if (res < 0 && errno != EINTR) {
+                  fprintf(stderr, "Error connecting %d - %s\n", errno, strerror(errno));
+                  return 0;
+               }
+               else if (res > 0) {
+                  // Socket selected for write
+                  lon = sizeof(int);
+                  if (getsockopt(sControl, SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon) < 0) {
+                     fprintf(stderr, "Error in getsockopt() %d - %s\n", errno, strerror(errno));
+                     return 0;
+                  }
+                  // Check the value returned...
+                  if (valopt) {
+                     fprintf(stderr, "Error in delayed connection() %d - %s\n", valopt, strerror(valopt));
+                     return 0;
+                  }
+                  break;
+               }
+               else {
+                  fprintf(stderr, "Timeout in select() - Cancelling!\n");
+                  return 0;
+               }
+            } while (1);
+         }
+         else {
+            fprintf(stderr, "Error connecting %d - %s\n", errno, strerror(errno));
+            return 0;
+         }
+//    if (ftplib_debug)
+//        perror("connect");
+//    net_close(sControl);
+//    return 0;
+    }
+    // Set to blocking mode again...
+    if( (arg = fcntl(sControl, F_GETFL, NULL)) < 0) {
+       fprintf(stderr, "Error fcntl(..., F_GETFL) (%s)\n", strerror(errno));
+       return 0;
+    }
+    arg &= (~O_NONBLOCK);
+    if( fcntl(sControl, F_SETFL, arg) < 0) {
+       fprintf(stderr, "Error fcntl(..., F_SETFL) (%s)\n", strerror(errno));
+       return 0;
+    }
+    
     ctrl = calloc(1,sizeof(netbuf));
     if (ctrl == NULL)
     {
@@ -711,7 +780,8 @@ GLOBALDEF int FtpConnect(const char *host, netbuf **nControl)
     ctrl->data = NULL;
     ctrl->cmode = FTPLIB_DEFMODE;
     ctrl->idlecb = NULL;
-    ctrl->idletime.tv_sec = ctrl->idletime.tv_usec = 0;
+    ctrl->idletime.tv_usec = 0;
+    ctrl->idletime.tv_sec = timeout;
     ctrl->idlearg = NULL;
     ctrl->xfered = 0;
     ctrl->xfered1 = 0;

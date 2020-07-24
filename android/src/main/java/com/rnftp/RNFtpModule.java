@@ -55,8 +55,8 @@ public class RNFtpModule extends ReactContextBaseJavaModule {
                     try {
                         client = new FTPClient();
                         String[] address = hostname.split(":");
-                        client.setDefaultTimeout(timeout * 1000);
-                        client.setConnectTimeout(timeout * 1000);
+                        client.setDefaultTimeout(timeout);
+                        client.setConnectTimeout(timeout);
                         if (address.length == 2) {
                             String host = address[0];
                             int port = Integer.parseInt(address[1]);

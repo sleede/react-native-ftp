@@ -155,7 +155,7 @@ typedef struct FtpCallbackOptions {
 GLOBALREF int ftplib_debug;
 GLOBALREF void FtpInit(void);
 GLOBALREF char *FtpLastResponse(netbuf *nControl);
-GLOBALREF int FtpConnect(const char *host, netbuf **nControl);
+GLOBALREF int FtpConnect(const char *host, netbuf **nControl, int timeout);
 GLOBALREF int FtpOptions(int opt, long val, netbuf *nControl);
 GLOBALREF int FtpSetCallback(const FtpCallbackOptions *opt, netbuf *nControl);
 GLOBALREF int FtpClearCallback(netbuf *nControl);

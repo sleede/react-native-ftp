@@ -480,7 +480,7 @@
     const char *user = [_credentials.username cStringUsingEncoding:NSUTF8StringEncoding];
     const char *pass = [_credentials.password cStringUsingEncoding:NSUTF8StringEncoding];
     netbuf *conn;
-    int stat = FtpConnect(host, &conn);
+    int stat = FtpConnect(host, &conn, _credentials.timeout / 1000);
     if (stat == 0) {
         // @fixme We don't get the exact error code from the lib. Use a generic
         // connection error.
@@ -507,14 +507,13 @@
     const char *user = [_credentials.username cStringUsingEncoding:NSUTF8StringEncoding];
     const char *pass = [_credentials.password cStringUsingEncoding:NSUTF8StringEncoding];
     netbuf *conn;
-    int stat = FtpConnect(host, &conn);
+    int stat = FtpConnect(host, &conn, _credentials.timeout / 1000);
     if (stat == 0) {
         // @fixme We don't get the exact error code from the lib. Use a generic
         // connection error.
         self.lastError = [NSError FTPKitErrorWithCode:10060];
         return NULL;
     }
-    FtpOptions(3, _credentials.timeout, conn);
     stat = FtpLogin(user, pass, conn);
     if (stat == 0) {
         NSString *response = [NSString stringWithCString:FtpLastResponse(conn) encoding:NSUTF8StringEncoding];
