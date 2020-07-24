@@ -88,6 +88,12 @@ RCT_EXPORT_METHOD(list:(NSString *)path listWithResolver:(RCTPromiseResolveBlock
                     [files addObject:newFile];
                 } else if (handle.type == FTPHandleTypeDirectory) {
                     // Do something with directory.
+                    NSMutableDictionary* newFile = [[NSMutableDictionary alloc] init];
+                    // file name
+                    NSString* name = handle.name;
+                    [newFile setObject:name forKey:@"name"];
+                    // Add this file to file list
+                    [files addObject:newFile];
                 }
             }
 
