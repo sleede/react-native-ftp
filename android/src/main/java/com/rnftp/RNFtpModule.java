@@ -13,6 +13,7 @@ import com.facebook.react.bridge.WritableMap;
 
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPClientConfig;
 import org.apache.commons.net.ftp.FTPFile;
 
 import java.io.BufferedOutputStream;
@@ -48,12 +49,19 @@ public class RNFtpModule extends ReactContextBaseJavaModule {
                 String username = config.hasKey("username") ? config.getString("username") : "anonymous";
                 String password = config.hasKey("password") ? config.getString("password") : "anonymous@";
                 int timeout = config.hasKey("timeout") ? config.getInt("timeout") : 0;
+                String systemType = config.hasKey("systemType") ? config.getString("systemType") : null;
 
                 if (hostname == "") {
                     promise.reject("ERROR","Expected hostname.");
                 } else {
                     try {
                         client = new FTPClient();
+
+                        if (systemType != null) {
+                            FTPClientConfig ftpConfig = new FTPClientConfig(systemType);
+                            client.configure(ftpConfig);
+                        }
+
                         String[] address = hostname.split(":");
                         client.setDefaultTimeout(timeout);
                         client.setConnectTimeout(timeout);
