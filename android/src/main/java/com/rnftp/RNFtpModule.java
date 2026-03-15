@@ -74,6 +74,21 @@ public class RNFtpModule extends ReactContextBaseJavaModule {
                         }
                         client.enterLocalPassiveMode();
                         Boolean isLogin = client.login(username, password);
+
+                        // 自动检测并修复非标准的 Win32NT 系统类型
+                        if (systemType == null && isLogin) {
+                            try {
+                                String remoteSystem = client.getSystemType();
+                                if (remoteSystem != null && remoteSystem.toUpperCase().contains("WIN32NT")) {
+                                    // 这是一个已知的兼容性问题：服务器报告 Win32NT 但通常输出 Unix 格式列表
+                                    FTPClientConfig autoConfig = new FTPClientConfig(FTPClientConfig.SYST_UNIX);
+                                    client.configure(autoConfig);
+                                }
+                            } catch (IOException e) {
+                                // 忽略检测错误，避免干扰主流程
+                            }
+                        }
+
                         promise.resolve(isLogin);
                     } catch (Exception e) {
                         promise.reject("ERROR",e.getMessage());
